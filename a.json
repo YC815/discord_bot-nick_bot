@@ -1,0 +1,23 @@
+                    {
+                        "description": "說明",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "key_code": "觸發按鍵"
+                                },
+                                "to": {
+                                    "key_code": [
+                                        "0",
+                                        "a",
+                                        "這裡要輸入一般按鍵"
+                                    ],
+                                    "modifiers": [
+                                        "left_command",
+                                        "left_shift",
+                                        "這裡要輸入特殊案件"
+                                    ]
+                                },
+                                "type": "basic"
+                            }
+                        ]
+                    }

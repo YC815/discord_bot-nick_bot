@@ -1,64 +1,50 @@
 from dotenv import load_dotenv
+import os
+from datetime import datetime
 import discord
 from discord.ext import commands
-from discord.ui import Button
-import random
+import pycord
 import json
-import os
-import time
 load_dotenv()
-
-
-with open('./setting.json', 'r', encoding='utf8') as jfile:
-    jdata = json.load(jfile)
-
 intents = discord.Intents.all()
-bot = commands.Bot(intents=intents, command_prefix='.')
-MAX_GUESS = 10
-flag = True
-ans_list = []
-guess_list = []
+bot = discord.Bot(intents=intents)
 
 
-@bot.event  # 開機
+@bot.event
 async def on_ready():
-    print(">>", bot.user, "is online <<")
-    game = discord.Game('匿名發文:)')
-    await bot.change_presence(status=discord.Status.online, activity=game)
+    print(f"We have logged in as {bot.user}")
 
 
-@bot.command()  # 指令 - ping(延遲確認)
-async def ping(ctx):
-    """
-    輸入這個指令可以讓您確認機器人是否在線！
-    也可以知道您與機器人的延遲。
-    """
-    lag = int(bot.latency*1000)
-    await ctx.send(f"pong! {lag}(ms)")
-    # await ctx.send("%s %d%s" % ("pong! " + str(int(bot.latency*1000)) + "(ms)"))
+# @bot.slash_command()
+# async def ping(ctx):
+#     """
+#     可以查看機器人的延遲
+#     """
+#     lag = int(bot.latency*1000)
+#     await ctx.respond(f"pong! {lag}(ms)")
 
 
-@commands.has_permissions(administrator=True)
-@bot.command()  # 指令 - say(複誦)
-async def say(ctx, *, msg):
-    """
-    機器人會代替你說話
-    """
-    if "@everyone" in msg or "@here" in msg:
-        await ctx.message.delete()
-        await ctx.send("字串內包含非法文字")
-    else:
-        await ctx.message.delete()
-        await ctx.send(msg)
+# @bot.slash_command()  # 指令 - say(複誦)
+# async def say(ctx, *, msg):
+#     """
+#     [管理員專用]
+#     機器人會代替你說話
+#     @msg: 機器人要代替你說的話
+#     """
+#     await ctx.respond(msg)
 
 
-@bot.command()
-async def clear(ctx, num: int):
-    """
-    [管理員專用]
-    可以批量刪除訊息
-    """
-    await ctx.channel.purge(limit=num + 1)
+# @bot.slash_command()
+# async def help(ctx):
+#     """
+#     獲取幫助
+#     """
+#     embed = discord.Embed(
+#         title="獲取指令幫助", description="查看酒吧管理員的服務內容", color=0x18d6fb)
+#     embed.add_field(name="help", value="可以查看此指令", inline=False)
+#     embed.add_field(name="ping", value="可以查看您與酒吧管理員之間的延遲", inline=False)
+#     # embed.add_field(name="say", value="[管理員專用]", inline=False)
+#     await ctx.respond(embed=embed)
 
 
 @bot.event
@@ -66,10 +52,22 @@ async def on_message(message):
     if message.channel.type == discord.ChannelType.private:
         msg = message.content
         channel = bot.get_channel(int(1051043085666242610))
-        seconds = time.time()
-        local_time = time.ctime(seconds)
-        title = "nick-" + str(local_time)
+        with open('nick_msg_count.json', 'r') as openfile:
+            cj = json.load(openfile)
+        title = "nick-" + str(cj["count"])
         await channel.create_thread(name=title, content=str(msg))
+        cj["count"] += 1
+        with open('nick_msg_count.json', 'w') as outfile:
+            json.dump(cj, outfile)
 
+
+# @bot.event
+# async def on_message(message):
+#     if message.channel.type == discord.ChannelType.private:
+#         msg = message.content
+#         time = datetime.today().strftime('%Y-%m-%d')
+#         title = "nick-" + str(time)
+#         channel = bot.get_channel(int(1051043085666242610))
+#         await channel.create_thread(name=title, content=str(msg))
 
 bot.run(os.getenv('TOKEN'))
